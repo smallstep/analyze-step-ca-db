@@ -7,14 +7,20 @@ import (
 	"os"
 
 	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/options"
 	"github.com/pkg/errors"
 )
 
 func main() {
-	db, err := badger.Open(badger.DefaultOptions(os.Args[1]))
+	bo := badger.DefaultOptions(os.Args[1])
+	bo.ValueLogLoadingMode = options.FileIO
+	bo.Truncate = true
+
+	db, err := badger.Open(bo)
 	if err != nil {
-		panic(err)
+		panic(errors.Wrap(err, "error opening Badger database"))
 	}
+
 	defer db.Close()
 
 	for _, table := range tables {
@@ -45,14 +51,14 @@ var tables = []string{
 	"used_ott",
 	"revoked_x509_certs",
 	"x509_certs",
-	"acme_accounts",
-	"acme_keyID_accountID_index",
-	"acme_authzs",
-	"acme_challenges",
-	"nonces",
-	"acme_orders",
-	"acme_account-orders-index",
-	"acme_certs",
+	"acme-accounts",
+	"acme-keyID-accountID-index",
+	"acme-authzs",
+	"acme-challenges",
+	"nonce-table",
+	"acme-orders",
+	"acme-account-orders-index",
+	"acme-certs",
 }
 
 func countPrefix(db *badger.DB, prefix []byte) int {
